@@ -1,175 +1,171 @@
-# 🎬 Streaming-API
+# Streaming-API
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org)
 [![Express](https://img.shields.io/badge/Express-4.18-blue.svg)](https://expressjs.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A powerful streaming API for real-time movie data processing and delivery using The Movie Database (TMDB) API.
+A robust, enterprise-grade REST API designed for real-time media data aggregation and delivery. This application leverages The Movie Database (TMDB) API to provide comprehensive information for movies, TV shows, and personnel.
 
----
+## System Architecture
 
-## ✨ Features
+The following diagram illustrates the high-level architecture of the Streaming API, showcasing the data flow from the client to the TMDB external service.
 
-| Feature | Description |
-|---------|-------------|
-| 🔍 | Movie search functionality |
-| 🎬 | Popular and trending movies |
-| 📊 | Detailed movie information |
-| 👥 | Cast and crew details |
-| 🎥 | Videos and trailers |
-| ⚡ | Fast and lightweight |
-| 🛡️ | Rate limiting and error handling |
-| 📖 | Comprehensive API documentation |
-
----
-
-## 🚀 Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/ramkrishna-js/Streaming-API.git
-cd Streaming-API
-
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env
-
-# Start the server
-npm start
+```mermaid
+graph TD
+    Client[Client Application] -->|HTTP Request| API[Streaming API Gateway]
+    
+    subgraph "Streaming API Server"
+        API -->|Rate Limiter| RL[Express Rate Limit]
+        RL -->|Router| Router{Route Handler}
+        
+        Router -->|/api/movies| MC[Movie Controller]
+        Router -->|/api/tv| TC[TV Controller]
+        Router -->|/api/people| PC[Person Controller]
+        Router -->|/api/collections| CC[Collection Controller]
+        
+        MC --> Service[TMDB Service]
+        TC --> Service
+        PC --> Service
+        CC --> Service
+        
+        Service -->|Check Cache| Cache[(In-Memory Cache)]
+    end
+    
+    Service -->|External API Call| TMDB[The Movie Database API]
+    TMDB -->|JSON Response| Service
+    Service -->|Cache Data| Cache
+    Service -->|Format Response| Router
+    Router -->|JSON Response| Client
 ```
 
-Server runs at: **http://localhost:3000**
+## Key Features
 
----
+- **Advanced Discovery:** Filter content by year, rating, genre, and more with granular control.
+- **Global Localization:** Full support for internationalization via the `language` query parameter (e.g., `es-ES`, `fr-FR`).
+- **Watch Providers:** Real-time streaming availability data (Netflix, Amazon Prime, etc.).
+- **Comprehensive Media Data:**
+    - **Movies:** Now Playing, Popular, Top Rated, Reviews, Similar items.
+    - **TV Shows:** Season & Episode details, On The Air, Airing Today.
+    - **People:** Cast profiles, credits, and trending personalities.
+- **Collections:** Dedicated endpoints for movie franchises and collections.
+- **Multi-Search:** Unified search across all media types.
+- **Performance:** Implemented with in-memory caching and rate limiting for optimal reliability.
 
-## 📡 API Endpoints
+## Getting Started
 
-### Movie Search
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/movies/search?q={query}` | Search movies by title |
-| GET | `/api/movies/{id}` | Get movie details |
+### Prerequisites
 
-### Popular Movies
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/movies/popular` | Get popular movies |
-| GET | `/api/movies/trending` | Get trending movies |
-| GET | `/api/movies/upcoming` | Get upcoming movies |
-
-### Movie Details
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/movies/{id}/credits` | Get cast and crew |
-| GET | `/api/movies/{id}/videos` | Get trailers and videos |
-
----
-
-## 📖 API Examples
-
-### Search Movies
-
-```bash
-GET /api/movies/search?q=batman
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "results": [
-      {
-        "id": 268,
-        "title": "The Dark Knight",
-        "overview": "When the menace known as the Joker...",
-        "release_date": "2008-07-16",
-        "poster_path": "/qJ2tW6WMUDux911r6m7h66oaTjM.jpg"
-      }
-    ]
-  },
-  "pagination": { "page": 1, "total_pages": 10, "total_results": 200 }
-}
-```
-
-### Get Movie Details
-
-```bash
-GET /api/movies/268
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 268,
-    "title": "The Dark Knight",
-    "overview": "When the menace known as the Joker...",
-    "release_date": "2008-07-16",
-    "runtime": 152,
-    "vote_average": 8.5,
-    "genres": ["Action", "Crime", "Drama"]
-  }
-}
-```
-
----
-
-## ⚡ Rate Limiting & Caching
-
-| Feature | Limit |
-|---------|-------|
-| Requests per minute | 40 |
-| Cache duration | 5 minutes |
-| Rate limit header | `X-RateLimit-Remaining` |
-
----
-
-## 🔧 Environment Variables
-
-```env
-TMDB_API_KEY=your_tmdb_api_key_here
-PORT=3000
-NODE_ENV=production
-```
-
----
-
-## 📦 Requirements
-
-- Node.js v18+
+- Node.js v18 or higher
 - npm or yarn
-- [TMDB API Key](https://www.themoviedb.org/settings/api)
+- A valid [TMDB API Key](https://www.themoviedb.org/documentation/api)
 
----
+### Installation
 
-## 🤝 Contributing
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/ramkrishna-js/Streaming-API.git
+    cd Streaming-API
+    ```
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
----
+3.  **Environment Setup**
+    Create a `.env` file in the root directory:
+    ```bash
+    cp .env.example .env
+    ```
+    Update the `.env` file with your credentials:
+    ```env
+    TMDB_API_KEY=your_actual_api_key
+    PORT=3000
+    NODE_ENV=development
+    ```
 
-## 📄 License
+4.  **Start the Application**
+    ```bash
+    npm start
+    ```
+    The server will initialize at `http://localhost:3000`.
 
-MIT License - see [LICENSE](LICENSE) file for details.
+## API Request Flow
 
----
+The sequence diagram below details the lifecycle of a typical API request, including caching strategies.
 
-## 🙏 Acknowledgments
+```mermaid
+sequenceDiagram
+    participant User as Client
+    participant Server as Express Server
+    participant Cache as Memory Cache
+    participant TMDB as TMDB External API
 
-- [TMDB API](https://www.themoviedb.org/documentation/api) for movie data
-- [Express.js](https://expressjs.com/) for the web framework
-- [axios](https://axios-http.com/) for HTTP requests
+    User->>Server: GET /api/movies/popular
+    Server->>Cache: Check for 'movie:popular'
+    
+    alt Cache Hit
+        Cache-->>Server: Return cached JSON
+    else Cache Miss
+        Server->>TMDB: GET /movie/popular (API Key)
+        TMDB-->>Server: JSON Data
+        Server->>Cache: Store data (TTL: 5 min)
+    end
+    
+    Server-->>User: Formatted JSON Response
+```
+
+## API Reference
+
+All endpoints accept an optional `language` query parameter (default: `en-US`).
+
+### Movies
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/movies/search?q={query}` | Search by title |
+| GET | `/api/movies/discover` | Advanced filtering (sort, year, rating) |
+| GET | `/api/movies/{id}` | Detailed movie information |
+| GET | `/api/movies/{id}/providers` | Streaming availability |
+| GET | `/api/movies/popular/list` | Popular movies |
+| GET | `/api/movies/now_playing/list` | Currently in theaters |
+| GET | `/api/movies/top_rated/list` | Highest rated movies |
+
+### TV Shows
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tv/search?q={query}` | Search TV shows |
+| GET | `/api/tv/discover` | Advanced filtering |
+| GET | `/api/tv/{id}` | Show details |
+| GET | `/api/tv/{id}/season/{s}` | Season details |
+| GET | `/api/tv/{id}/season/{s}/episode/{e}` | Episode details |
+
+### People
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/people/search?q={query}` | Search for people |
+| GET | `/api/people/{id}` | Person details and credits |
+
+### Collections
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/collections/{id}` | Collection details |
+
+### General
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/search/multi?q={query}` | Combined search |
+| GET | `/health` | System status check |
+
+## Contributing
+
+Contributions are welcome. Please fork the repository and submit a pull request for review.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/ramkrishna-js">ramkrishna-js</a>
+  Developed by <a href="https://github.com/ramkrishna-js">ramkrishna-js</a>
 </p>
