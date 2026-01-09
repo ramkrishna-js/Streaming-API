@@ -1,17 +1,26 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const movieRoutes = require('./src/routes/movieRoutes');
 const tvRoutes = require('./src/routes/tvRoutes');
 const personRoutes = require('./src/routes/personRoutes');
 const searchRoutes = require('./src/routes/searchRoutes');
 const collectionRoutes = require('./src/routes/collectionRoutes');
 const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
+const logger = require('./src/utils/logger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Security Middleware
+app.use(helmet());
+
+// Logging Middleware
+app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+
+// CORS Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://yourdomain.com'] 
@@ -28,7 +37,7 @@ app.get('/health', (req, res) => {
     success: true,
     message: 'Streaming API is running',
     timestamp: new Date().toISOString(),
-    version: '1.1.0'
+    version: '1.2.0'
   });
 });
 
@@ -109,15 +118,16 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Streaming API running on port ${PORT}`);
-  console.log(`📖 API Documentation: http://localhost:${PORT}/api`);
-  console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
-  
-  if (!process.env.TMDB_API_KEY) {
-    console.error('⚠️  WARNING: TMDB_API_KEY environment variable is not set');
-    console.error('   Please set your TMDB API key in the .env file');
-  }
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info(`🚀 Streaming API running on port ${PORT}`);
+    logger.info(`📖 API Documentation: http://localhost:${PORT}/api`);
+    logger.info(`🏥 Health Check: http://localhost:${PORT}/health`);
+    
+    if (!process.env.TMDB_API_KEY) {
+      logger.error('⚠️  WARNING: TMDB_API_KEY environment variable is not set');
+    }
+  });
+}
 
 module.exports = app;
