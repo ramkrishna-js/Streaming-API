@@ -1,0 +1,33 @@
+{
+  "name": "@ramkrishna-js/streaming-sdk",
+  "version": "1.1.0",
+  "description": "A powerful SDK for interacting with the TMDB API with built-in caching, multi-language support, and TypeScript definitions.",
+  "main": "index.js",
+  "module": "index.mjs",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tmdb",
+    "movies",
+    "tv",
+    "streaming",
+    "sdk",
+    "api",
+    "typescript"
+  ],
+  "author": "ramkrishna-js",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "node-cache": "^5.1.2"
+  }
+}
