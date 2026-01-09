@@ -3,46 +3,61 @@
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org)
 [![Express](https://img.shields.io/badge/Express-4.18-blue.svg)](https://expressjs.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Testing](https://img.shields.io/badge/Testing-Jest-brightgreen.svg)](tests/)
 
-A robust REST API designed for real-time media data aggregation and delivery. This application leverages The Movie Database (TMDB) API to provide comprehensive information for movies, TV shows, and personnel, enhanced with enterprise-grade logging, security, and testing.
+A robust, enterprise-grade REST API designed for real-time media data aggregation and delivery. This application leverages The Movie Database (TMDB) API to provide comprehensive information for movies, TV shows, and personnel.
 
-## System Overview
+## System Architecture
 
-The Streaming API serves as a middle-layer between client applications and the TMDB service, providing cached, formatted, and secured media data.
+The following diagram illustrates the high-level architecture of the Streaming API, showcasing the data flow from the client to the TMDB external service.
 
 ```mermaid
 graph TD
-    Client[Client Application] -->|HTTP Request| API[Streaming API]
+    Client[Client Application] -->|HTTP Request| API[Streaming API Gateway]
     
-    subgraph "Core Server"
-        API -->|Middleware| Security[Helmet & Rate Limit]
-        API -->|Middleware| Logging[Morgan & Winston]
-        API -->|Route Handler| Controllers[Resource Controllers]
-        Controllers -->|Data Logic| TMDBService[TMDB Service]
-        TMDBService -->|Cache| MemoryCache[Node Cache]
+    subgraph Server [Streaming API Server]
+        API -->|Rate Limiter| RL[Express Rate Limit]
+        RL -->|Router| Router{Route Handler}
+        
+        Router -->|/api/movies| MC[Movie Controller]
+        Router -->|/api/tv| TC[TV Controller]
+        Router -->|/api/people| PC[Person Controller]
+        Router -->|/api/collections| CC[Collection Controller]
+        
+        MC --> Service[TMDB Service]
+        TC --> Service
+        PC --> Service
+        CC --> Service
+        
+        Service -->|Check Cache| Cache[(In-Memory Cache)]
     end
     
-    TMDBService -->|External API| TMDBAPI[The Movie Database]
+    Service -->|External API Call| TMDB[The Movie Database API]
+    TMDB -->|JSON Response| Service
+    Service -->|Cache Data| Cache
+    Service -->|Format Response| Router
+    Router -->|JSON Response| Client
 ```
 
-## Core Features
+## Key Features
 
-- **Enterprise Logging:** Structured logging using Winston and HTTP request logging with Morgan.
-- **Enhanced Security:** Implementation of Helmet.js for HTTP header security and built-in rate limiting.
-- **External Metadata:** Integration of external IDs (IMDb, WikiData, etc.) for movies, TV shows, and people.
-- **Global Localization:** Multi-language support via query parameters.
-- **Watch Providers:** Real-time data on streaming availability across platforms.
-- **Automated Testing:** Integration testing suite powered by Jest and Supertest.
-- **Performance:** Optimized with in-memory caching to reduce external API latency.
+- **Advanced Discovery:** Filter content by year, rating, genre, and more with granular control.
+- **Global Localization:** Full support for internationalization via the `language` query parameter (e.g., `es-ES`, `fr-FR`).
+- **Watch Providers:** Real-time streaming availability data (Netflix, Amazon Prime, etc.).
+- **Comprehensive Media Data:**
+    - **Movies:** Now Playing, Popular, Top Rated, Reviews, Similar items.
+    - **TV Shows:** Season & Episode details, On The Air, Airing Today.
+    - **People:** Cast profiles, credits, and trending personalities.
+- **Collections:** Dedicated endpoints for movie franchises and collections.
+- **Multi-Search:** Unified search across all media types.
+- **Performance:** Implemented with in-memory caching and rate limiting for optimal reliability.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js v18+
+- Node.js v18 or higher
 - npm or yarn
-- TMDB API Key
+- A valid [TMDB API Key](https://www.themoviedb.org/documentation/api)
 
 ### Installation
 
@@ -58,44 +73,96 @@ graph TD
     ```
 
 3.  **Environment Setup**
+    Create a `.env` file in the root directory:
     ```bash
     cp .env.example .env
     ```
-    Configure your `TMDB_API_KEY` in the `.env` file.
+    Update the `.env` file with your credentials:
+    ```env
+    TMDB_API_KEY=your_actual_api_key
+    PORT=3000
+    NODE_ENV=development
+    ```
 
-4.  **Running the Application**
+4.  **Start the Application**
     ```bash
-    # Start production server
     npm start
-
-    # Start development server with hot reload
-    npm run dev
     ```
+    The server will initialize at `http://localhost:3000`.
 
-5.  **Running Tests**
-    ```bash
-    npm test
-    ```
+## API Request Flow
 
-## API Documentation
+The sequence diagram below details the lifecycle of a typical API request, including caching strategies.
 
-All resource endpoints support an optional `language` parameter. Detailed IDs for IMDb and social platforms are included in the resource detail responses.
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Streaming API
+    participant Cache as Redis/Memory
+    participant TMDB as TMDB API
 
-| Category | Endpoint | Purpose |
-|----------|----------|---------|
-| Movies | `/api/movies/discover` | Advanced search and discovery |
-| TV Shows | `/api/tv/{id}/season/{s}` | Specific season metadata |
-| People | `/api/people/{id}` | Profile, credits, and social links |
-| Search | `/api/search/multi` | Global search across categories |
-| System | `/health` | API heartbeat and status |
+    Client->>API: GET /api/movies/popular
+    API->>Cache: Check Cache
+    
+    alt Cache Hit
+        Cache-->>API: Return Cached Data
+    else Cache Miss
+        API->>TMDB: Fetch Data
+        TMDB-->>API: JSON Response
+        API->>Cache: Store in Cache
+    end
+    
+    API-->>Client: Final Response
+```
+
+## API Reference
+
+All endpoints accept an optional `language` query parameter (default: `en-US`).
+
+### Movies
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/movies/search?q={query}` | Search by title |
+| GET | `/api/movies/discover` | Advanced filtering (sort, year, rating) |
+| GET | `/api/movies/{id}` | Detailed movie information |
+| GET | `/api/movies/{id}/providers` | Streaming availability |
+| GET | `/api/movies/popular/list` | Popular movies |
+| GET | `/api/movies/now_playing/list` | Currently in theaters |
+| GET | `/api/movies/top_rated/list` | Highest rated movies |
+
+### TV Shows
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tv/search?q={query}` | Search TV shows |
+| GET | `/api/tv/discover` | Advanced filtering |
+| GET | `/api/tv/{id}` | Show details |
+| GET | `/api/tv/{id}/season/{s}` | Season details |
+| GET | `/api/tv/{id}/season/{s}/episode/{e}` | Episode details |
+
+### People
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/people/search?q={query}` | Search for people |
+| GET | `/api/people/{id}` | Person details and credits |
+
+### Collections
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/collections/{id}` | Collection details |
+
+### General
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/search/multi?q={query}` | Combined search |
+| GET | `/health` | System status check |
 
 ## Contributing
 
-Please submit a pull request for any feature enhancements or bug fixes. Ensure that new code includes appropriate tests and adheres to the established logging standards.
+Contributions are welcome. Please fork the repository and submit a pull request for review.
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
