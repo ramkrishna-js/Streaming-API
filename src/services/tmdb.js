@@ -73,7 +73,21 @@ class TMDBService {
   async getMovieDetails(movieId, language = 'en-US') {
     return this.request(`/movie/${movieId}`, {
       language,
-      append_to_response: 'videos,credits,recommendations,reviews'
+      append_to_response: 'videos,credits,recommendations,reviews,external_ids'
+    });
+  }
+
+  async getTVDetails(tvId, language = 'en-US') {
+    return this.request(`/tv/${tvId}`, {
+      language,
+      append_to_response: 'videos,credits,recommendations,reviews,external_ids'
+    });
+  }
+
+  async getPersonDetails(personId, language = 'en-US') {
+    return this.request(`/person/${personId}`, {
+      language,
+      append_to_response: 'movie_credits,tv_credits,images,external_ids'
     });
   }
 
