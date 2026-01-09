@@ -14,7 +14,7 @@ The following diagram illustrates the high-level architecture of the Streaming A
 graph TD
     Client[Client Application] -->|HTTP Request| API[Streaming API Gateway]
     
-    subgraph "Streaming API Server"
+    subgraph Server [Streaming API Server]
         API -->|Rate Limiter| RL[Express Rate Limit]
         RL -->|Router| Router{Route Handler}
         
