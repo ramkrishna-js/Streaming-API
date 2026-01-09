@@ -1,7 +1,7 @@
 {
   "name": "@ramkrishna-js/streaming-sdk",
   "version": "1.1.0",
-  "description": "A powerful SDK for interacting with the TMDB API with built-in caching, multi-language support, and TypeScript definitions.",
+  "description": "The ultimate Node.js/TypeScript SDK for TMDB. High-performance, dual-stack (ESM/CJS) support, featuring intelligent media utilities, auto-pagination, and customizable caching.",
   "main": "index.js",
   "module": "index.mjs",
   "types": "index.d.ts",

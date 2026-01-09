@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Testing](https://img.shields.io/badge/Testing-Jest-brightgreen.svg)](tests/)
 
-A robust REST API designed for real-time media data aggregation and delivery. This application leverages The Movie Database (TMDB) API to provide comprehensive information for movies, TV shows, and personnel, enhanced with enterprise-grade logging, security, and testing.
+Enterprise-grade REST API for real-time media data aggregation. Built with Node.js, featuring high-performance caching, advanced content discovery, global localization, and comprehensive security. This application leverages The Movie Database (TMDB) API to provide exhaustive metadata for movies, TV shows, and personnel.
 
 ## System Overview
 

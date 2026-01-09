@@ -1,6 +1,6 @@
 # @ramkrishna-js/streaming-sdk
 
-A lightweight, high-performance Node.js SDK for interacting with The Movie Database (TMDB) API.
+The ultimate Node.js/TypeScript SDK for The Movie Database (TMDB). High-performance, dual-stack (ESM/CJS) support, featuring intelligent media utilities, auto-pagination, and customizable caching. Designed for building enterprise-grade media applications.
 
 ## Features
 

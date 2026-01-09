@@ -1,7 +1,7 @@
 {
   "name": "streaming-api",
   "version": "1.3.0",
-  "description": "A powerful streaming API for real-time movie data processing and delivery using TMDB API",
+  "description": "Enterprise-grade REST API for real-time media data aggregation. Built with Node.js, featuring high-performance caching, advanced content discovery, global localization, and comprehensive security.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
